@@ -17,7 +17,8 @@ function ChatRoom() {
             .catch(error => console.error("Error fetching history:", error));
 
         // 2. Establish a WebSocket connection for real-time messaging
-        ws.current = new WebSocket(`ws://localhost:8000/ws/chat/${roomName}/`);
+        const socket = new WebSocket(`ws://localhost:8000/ws/chat/${roomName}/`);
+        ws.current = socket;
 
         // 3. Listen for incoming messages from the WebSocket server
         ws.current.onmessage = (event) => {
@@ -28,7 +29,11 @@ function ChatRoom() {
 
         // 4. Clean up the WebSocket connection when the component unmounts
         return () => {
-            ws.current.close();
+            if (socket.readyState === 1) { 
+                socket.close();
+            } else {
+                socket.onopen = () => socket.close();
+            }
         };
     }, [roomName]);
 
